@@ -27,7 +27,7 @@ export default function LoginPage() {
             setError(error.message);
             setLoading(false);
         } else {
-            router.push("/");
+            router.push("/collection");
             router.refresh();
         }
     };
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
                     <div className="mt-6 pt-6 border-t border-slate-200">
                         <Link
-                            href="/"
+                            href="/collection"
                             className="block text-center text-slate-500 text-sm hover:text-slate-700 transition-colors"
                         >
                             Continue as guest

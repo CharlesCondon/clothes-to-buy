@@ -48,7 +48,7 @@ export default function SignupPage() {
             setLoading(false);
             // Auto-sign in after signup
             setTimeout(() => {
-                router.push("/");
+                router.push("/collection");
                 router.refresh();
             }, 1500);
         }
@@ -191,7 +191,7 @@ export default function SignupPage() {
 
                     <div className="mt-6 pt-6 border-t border-slate-200">
                         <Link
-                            href="/"
+                            href="/collection"
                             className="block text-center text-slate-500 text-sm hover:text-slate-700 transition-colors"
                         >
                             Continue as guest
