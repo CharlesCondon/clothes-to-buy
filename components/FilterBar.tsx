@@ -21,8 +21,8 @@ const categories: { value: CategoryFilter; label: string }[] = [
 ];
 
 const sortOptions: { value: SortOption; label: string }[] = [
-    { value: "newest", label: "Newest First" },
-    { value: "oldest", label: "Oldest First" },
+    { value: "newest", label: "Newest" },
+    { value: "oldest", label: "Oldest" },
     { value: "a-z", label: "A-Z" },
     { value: "z-a", label: "Z-A" },
     { value: "price-low", label: "Price: Low to High" },

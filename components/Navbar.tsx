@@ -40,9 +40,9 @@ export default function Navbar() {
     };
 
     // Don't show navbar on auth pages
-    // if (pathname?.startsWith("/login") || pathname?.startsWith("/signup")) {
-    //     return null;
-    // }
+    if (pathname?.startsWith("/login") || pathname?.startsWith("/signup")) {
+        return null;
+    }
 
     return (
         <nav className="bg-white border-b border-slate-200">
@@ -97,7 +97,7 @@ export default function Navbar() {
                                 </div>
                                 <button
                                     onClick={handleLogout}
-                                    className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                                    className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                                 >
                                     Logout
                                 </button>

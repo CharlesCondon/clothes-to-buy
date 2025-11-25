@@ -4,13 +4,15 @@ import { useState, useMemo } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import FilterSortBar from "@/components/FilterBar";
+import AddProductModal from "@/components/AddProductForm";
 import { CategoryFilter, SortOption } from "@/lib/types";
-import Link from "next/link";
 
 export default function HomePage() {
-    const { products, loading, deleteProduct, user } = useProducts();
+    const { products, loading, deleteProduct, addProduct, user } =
+        useProducts();
     const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
     const [sortOption, setSortOption] = useState<SortOption>("newest");
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Filter and sort products
     const filteredAndSortedProducts = useMemo(() => {
@@ -101,9 +103,9 @@ export default function HomePage() {
 
             {/* Add Product Button */}
             <div className="mb-6">
-                <Link
-                    href="/add"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-colors shadow-sm"
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-colors shadow-sm cursor-pointer"
                 >
                     <svg
                         className="w-5 h-5"
@@ -119,7 +121,7 @@ export default function HomePage() {
                         />
                     </svg>
                     Add Product
-                </Link>
+                </button>
             </div>
 
             {products.length === 0 ? (
@@ -146,9 +148,9 @@ export default function HomePage() {
                     <p className="text-slate-600 mb-6">
                         Start adding products to build your collection
                     </p>
-                    <Link
-                        href="/add"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-colors"
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-colors cursor-pointer"
                     >
                         <svg
                             className="w-5 h-5"
@@ -164,7 +166,7 @@ export default function HomePage() {
                             />
                         </svg>
                         Add Your First Product
-                    </Link>
+                    </button>
                 </div>
             ) : (
                 <>
@@ -205,6 +207,13 @@ export default function HomePage() {
                     )}
                 </>
             )}
+
+            {/* Add Product Modal */}
+            <AddProductModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onAdd={addProduct}
+            />
         </div>
     );
 }
