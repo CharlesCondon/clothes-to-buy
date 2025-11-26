@@ -149,7 +149,7 @@ export async function POST(request: Request) {
                 // Skip invalid JSON-LD
             }
         });
-        console.log(productData);
+        //console.log(productData);
 
         // 2. Extract from Open Graph meta tags
         if (!productData.name) {

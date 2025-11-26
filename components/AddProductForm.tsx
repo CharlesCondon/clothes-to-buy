@@ -133,7 +133,7 @@ export default function AddProductForm({
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity cursor-pointer"
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity"
                 onClick={handleClose}
             />
 
@@ -147,7 +147,7 @@ export default function AddProductForm({
                         </h2>
                         <button
                             onClick={handleClose}
-                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                         >
                             <svg
                                 className="w-6 h-6 text-slate-600"
