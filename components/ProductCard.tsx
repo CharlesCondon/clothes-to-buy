@@ -8,6 +8,18 @@ interface ProductCardProps {
     onDelete: (id: string) => void;
 }
 
+const getCurrencySymbol = (currency: string): string => {
+    const symbols: { [key: string]: string } = {
+        USD: "$",
+        EUR: "€",
+        GBP: "£",
+        CAD: "CA$",
+        AUD: "A$",
+        JPY: "¥",
+    };
+    return symbols[currency] || currency;
+};
+
 export default function ProductCard({ product, onDelete }: ProductCardProps) {
     const handleDelete = () => {
         if (window.confirm("Are you sure you want to delete this item?")) {
@@ -91,9 +103,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
                 <div className="flex items-center justify-between mt-3">
                     {product.price !== null ? (
                         <span className="text-lg font-semibold text-slate-900">
-                            {product.currency === "USD"
-                                ? "$"
-                                : product.currency}
+                            {getCurrencySymbol(product.currency)}
                             {product.price.toFixed(2)}
                         </span>
                     ) : (
