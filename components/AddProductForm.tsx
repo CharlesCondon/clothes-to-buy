@@ -20,6 +20,7 @@ export default function AddProductForm({
     const [url, setUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [scraping, setScraping] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [scrapedData, setScrapedData] = useState<Partial<Product> | null>(
         null
     );
