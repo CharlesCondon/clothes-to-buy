@@ -15,7 +15,7 @@ export const config = {
          * Feel free to modify this pattern to include more paths.
          */
         "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-        "https://clothes-to-e3b5bkahd-charles-condons-projects.vercel.app/collection",
-        "https://clothes-to-e3b5bkahd-charles-condons-projects.vercel.app/api/scrape",
+        "/collection",
+        "/api/scrape",
     ],
 };
