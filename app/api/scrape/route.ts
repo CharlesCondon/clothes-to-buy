@@ -27,11 +27,30 @@ export async function POST(request: Request) {
         const response = await fetch(url, {
             headers: {
                 "User-Agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate, br",
+                Connection: "keep-alive",
+                "Upgrade-Insecure-Requests": "1",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Cache-Control": "max-age=0",
             },
         });
 
         if (!response.ok) {
+            if (response.status === 403) {
+                return NextResponse.json(
+                    {
+                        error: "Unable to access this website. The site may be blocking automated requests. Please try manually entering the product details.",
+                        blocked: true,
+                    },
+                    { status: 403 }
+                );
+            }
+
             return NextResponse.json(
                 { error: "Failed to fetch the product page" },
                 { status: response.status }
