@@ -1,31 +1,28 @@
+// components/EditProductModal.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "@/lib/types";
 import Image from "next/image";
 
-interface AddProductFormProps {
+interface EditProductModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAdd: (
-        product: Omit<Product, "id" | "created_at" | "updated_at">
-    ) => Promise<void>;
+    onUpdate: (id: string, updates: Partial<Product>) => Promise<void>;
+    product: Product | null;
 }
 
-export default function AddProductForm({
+export default function EditProductModal({
     isOpen,
     onClose,
-    onAdd,
-}: AddProductFormProps) {
-    const [url, setUrl] = useState("");
+    onUpdate,
+    product,
+}: EditProductModalProps) {
     const [loading, setLoading] = useState(false);
-    const [scraping, setScraping] = useState(false);
-    const [scrapedData, setScrapedData] = useState<Partial<Product> | null>(
-        null
-    );
     const [error, setError] = useState<string | null>(null);
 
-    // Manual form fields
+    // Form fields
+    const [url, setUrl] = useState("");
     const [name, setName] = useState("");
     const [brand, setBrand] = useState("");
     const [price, setPrice] = useState("");
@@ -34,55 +31,29 @@ export default function AddProductForm({
     const [imageUrl, setImageUrl] = useState("");
     const [category, setCategory] = useState<string>("other");
 
-    const handleScrape = async () => {
-        if (!url.trim()) {
-            setError("Please enter a product URL");
-            return;
+    // Populate form when product changes
+    useEffect(() => {
+        if (product) {
+            setUrl(product.url);
+            setName(product.name || "");
+            setBrand(product.brand || "");
+            setPrice(product.price?.toString() || "");
+            setSalePrice(product.salePrice?.toString() || "");
+            setCurrency(product.currency || "USD");
+            setImageUrl(product.image_url || "");
+            setCategory(product.category || "other");
         }
-
-        setScraping(true);
-        setError(null);
-
-        try {
-            const response = await fetch("/api/scrape", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to scrape product");
-            }
-
-            // Set scraped data
-            setScrapedData(data);
-            setName(data.name || "");
-            setBrand(data.brand || "");
-            setPrice(data.price?.toString() || "");
-            setSalePrice(data.salePrice?.toString() || "");
-            setCurrency(data.currency || "USD");
-            setImageUrl(data.image_url || "");
-            setCategory(data.category || "other");
-        } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Failed to fetch product details"
-            );
-        } finally {
-            setScraping(false);
-        }
-    };
+    }, [product]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!product) return;
+
         setLoading(true);
         setError(null);
 
         try {
-            await onAdd({
+            await onUpdate(product.id, {
                 url,
                 name: name || null,
                 brand: brand || null,
@@ -93,20 +64,10 @@ export default function AddProductForm({
                 category: category || null,
             });
 
-            // Reset form
-            setUrl("");
-            setName("");
-            setBrand("");
-            setPrice("");
-            setSalePrice("");
-            setCurrency("USD");
-            setImageUrl("");
-            setCategory("other");
-            setScrapedData(null);
             onClose();
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : "Failed to add product"
+                err instanceof Error ? err.message : "Failed to update product"
             );
         } finally {
             setLoading(false);
@@ -114,20 +75,11 @@ export default function AddProductForm({
     };
 
     const handleClose = () => {
-        setUrl("");
-        setName("");
-        setBrand("");
-        setPrice("");
-        setSalePrice("");
-        setCurrency("USD");
-        setImageUrl("");
-        setCategory("other");
-        setScrapedData(null);
         setError(null);
         onClose();
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !product) return null;
 
     return (
         <>
@@ -143,7 +95,7 @@ export default function AddProductForm({
                     {/* Header */}
                     <div className="flex items-center justify-between p-6 border-b border-slate-200">
                         <h2 className="text-2xl font-light text-slate-800">
-                            Add Product
+                            Edit Product
                         </h2>
                         <button
                             onClick={handleClose}
@@ -176,48 +128,15 @@ export default function AddProductForm({
                                 >
                                     Product URL *
                                 </label>
-                                <div className="flex gap-2">
-                                    <input
-                                        id="url"
-                                        type="url"
-                                        value={url}
-                                        onChange={(e) => setUrl(e.target.value)}
-                                        placeholder="https://example.com/product"
-                                        required
-                                        className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleScrape}
-                                        disabled={scraping || !url.trim()}
-                                        className="px-6 py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-nowrap cursor-pointer"
-                                    >
-                                        {scraping ? (
-                                            <span className="flex items-center gap-2">
-                                                <svg
-                                                    className="w-4 h-4 animate-spin"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                                    />
-                                                </svg>
-                                                Fetching...
-                                            </span>
-                                        ) : (
-                                            "Fetch Details"
-                                        )}
-                                    </button>
-                                </div>
-                                <p className="text-xs text-slate-500 mt-1">
-                                    Paste the product URL and click &quot;Fetch
-                                    Details&quot; to auto-fill
-                                </p>
+                                <input
+                                    id="url"
+                                    type="url"
+                                    value={url}
+                                    onChange={(e) => setUrl(e.target.value)}
+                                    placeholder="https://example.com/product"
+                                    required
+                                    className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
+                                />
                             </div>
 
                             {error && (
@@ -272,64 +191,62 @@ export default function AddProductForm({
                                     />
                                 </div>
 
-                                {/* Price and Category Row */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Price */}
+                                {/* Price Row */}
+                                <div className="grid grid-cols-3 gap-4">
+                                    {/* Currency */}
+                                    <div>
+                                        <label
+                                            htmlFor="currency"
+                                            className="block text-sm font-medium text-slate-700 mb-1.5"
+                                        >
+                                            Currency
+                                        </label>
+                                        <select
+                                            id="currency"
+                                            value={currency}
+                                            onChange={(e) =>
+                                                setCurrency(e.target.value)
+                                            }
+                                            className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 cursor-pointer"
+                                        >
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                            <option value="CAD">CAD ($)</option>
+                                            <option value="AUD">AUD ($)</option>
+                                            <option value="JPY">JPY (¥)</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Regular Price */}
                                     <div>
                                         <label
                                             htmlFor="price"
                                             className="block text-sm font-medium text-slate-700 mb-1.5"
                                         >
-                                            Original Price
+                                            Price
                                         </label>
-                                        <div className="flex gap-2">
-                                            <select
-                                                value={currency}
-                                                onChange={(e) =>
-                                                    setCurrency(e.target.value)
-                                                }
-                                                className="px-3 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 cursor-pointer"
-                                            >
-                                                <option value="USD">
-                                                    USD ($)
-                                                </option>
-                                                <option value="EUR">
-                                                    EUR (€)
-                                                </option>
-                                                <option value="GBP">
-                                                    GBP (£)
-                                                </option>
-                                                <option value="CAD">
-                                                    CAD ($)
-                                                </option>
-                                                <option value="AUD">
-                                                    AUD ($)
-                                                </option>
-                                                <option value="JPY">
-                                                    JPY (¥)
-                                                </option>
-                                            </select>
-                                            <input
-                                                id="price"
-                                                type="number"
-                                                step="0.01"
-                                                value={price}
-                                                onChange={(e) =>
-                                                    setPrice(e.target.value)
-                                                }
-                                                placeholder="0.00"
-                                                className="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
-                                            />
-                                        </div>
+                                        <input
+                                            id="price"
+                                            type="number"
+                                            step="0.01"
+                                            value={price}
+                                            onChange={(e) =>
+                                                setPrice(e.target.value)
+                                            }
+                                            placeholder="0.00"
+                                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
+                                        />
                                     </div>
+
+                                    {/* Sale Price */}
                                     <div>
                                         <label
-                                            htmlFor="price"
+                                            htmlFor="salePrice"
                                             className="block text-sm font-medium text-slate-700 mb-1.5"
                                         >
                                             Sale Price
                                         </label>
-
                                         <input
                                             id="salePrice"
                                             type="number"
@@ -339,10 +256,11 @@ export default function AddProductForm({
                                                 setSalePrice(e.target.value)
                                             }
                                             placeholder="0.00"
-                                            className="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
+                                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
                                         />
                                     </div>
                                 </div>
+
                                 {/* Category */}
                                 <div>
                                     <label
@@ -357,7 +275,7 @@ export default function AddProductForm({
                                         onChange={(e) =>
                                             setCategory(e.target.value)
                                         }
-                                        className="w-full px-4 py-[12.5px] leading-[normal] rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 cursor-pointer"
+                                        className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 cursor-pointer"
                                     >
                                         <option value="shirts">Shirts</option>
                                         <option value="pants">Pants</option>
@@ -429,7 +347,7 @@ export default function AddProductForm({
                                     disabled={loading || !url.trim()}
                                     className="flex-1 px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium cursor-pointer"
                                 >
-                                    {loading ? "Adding..." : "Add Product"}
+                                    {loading ? "Updating..." : "Update Product"}
                                 </button>
                             </div>
                         </form>

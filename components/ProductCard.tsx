@@ -2,35 +2,36 @@
 
 import { Product } from "@/lib/types";
 import Image from "next/image";
+import {
+    getCurrencySymbol,
+    convertToUSD,
+    formatUSDConversion,
+} from "@/lib/currencyUtils";
 
 interface ProductCardProps {
     product: Product;
     onDelete: (id: string) => void;
+    onEdit: (product: Product) => void;
 }
 
-const getCurrencySymbol = (currency: string): string => {
-    const symbols: { [key: string]: string } = {
-        USD: "$",
-        EUR: "€",
-        GBP: "£",
-        CAD: "CA$",
-        AUD: "A$",
-        JPY: "¥",
-    };
-    return symbols[currency] || currency;
-};
-
-export default function ProductCard({ product, onDelete }: ProductCardProps) {
+export default function ProductCard({
+    product,
+    onDelete,
+    onEdit,
+}: ProductCardProps) {
     const handleDelete = () => {
         if (window.confirm("Are you sure you want to delete this item?")) {
             onDelete(product.id);
         }
     };
 
+    const showUSDConversion =
+        product.currency !== "USD" && product.price !== null;
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full">
             {/* Image */}
-            <div className="relative aspect-square bg-slate-100">
+            <div className="relative aspect-square bg-slate-100 ">
                 {product.image_url ? (
                     <Image
                         src={product.image_url}
@@ -58,24 +59,46 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
                 )}
 
                 {/* Delete button - shows on hover */}
-                <button
-                    onClick={handleDelete}
-                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
-                >
-                    <svg
-                        className="w-4 h-4 text-slate-600 hover:text-red-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                        onClick={() => onEdit(product)}
+                        className="p-2 bg-white rounded-full shadow-sm hover:bg-blue-50 transition-colors cursor-pointer"
+                        title="Edit product"
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                    </svg>
-                </button>
+                        <svg
+                            className="w-4 h-4 text-slate-600 hover:text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className="p-2 bg-white rounded-full shadow-sm hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Delete product"
+                    >
+                        <svg
+                            className="w-4 h-4 text-slate-600 hover:text-red-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                        </svg>
+                    </button>
+                </div>
 
                 {/* Category badge */}
                 {product.category && (
@@ -88,8 +111,8 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
             </div>
 
             {/* Content */}
-            <div className="p-4">
-                <div className="mb-2">
+            <div className="p-4 flex flex-col justify-between h-full">
+                <div className="">
                     <h3 className="text-sm font-medium text-slate-800 line-clamp-2 mb-1">
                         {product.name || "Untitled Product"}
                     </h3>
@@ -101,7 +124,7 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
                 </div>
 
                 <div className="flex items-center justify-between mt-3">
-                    <div className="flex gap-4">
+                    <div className="flex gap-2">
                         {product.price !== null ? (
                             <span
                                 className={`text-lg font-semibold text-slate-900 ${
@@ -120,6 +143,17 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
                             <span className="text-lg font-semibold text-red-700">
                                 {getCurrencySymbol(product.currency)}
                                 {product.salePrice.toFixed(2)}
+                            </span>
+                        )}
+                        {/* USD Conversion */}
+                        {showUSDConversion && (
+                            <span className="text-sm text-slate-500 flex items-center">
+                                {formatUSDConversion(
+                                    convertToUSD(
+                                        product.salePrice || product.price || 0,
+                                        product.currency
+                                    )
+                                )}
                             </span>
                         )}
                     </div>

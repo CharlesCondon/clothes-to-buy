@@ -45,7 +45,7 @@ export default function FilterSortBar({
                         <button
                             key={category.value}
                             onClick={() => onCategoryChange(category.value)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
                                 categoryFilter === category.value
                                     ? "bg-slate-800 text-white"
                                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"

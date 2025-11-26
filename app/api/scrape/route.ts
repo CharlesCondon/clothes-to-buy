@@ -27,18 +27,8 @@ export async function POST(request: Request) {
         const response = await fetch(url, {
             headers: {
                 "User-Agent":
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Cache-Control": "no-cache",
-                Pragma: "no-cache",
-                "Sec-Fetch-Dest": "document",
-                "Sec-Fetch-Mode": "navigate",
-                "Sec-Fetch-Site": "none",
-                "Sec-Fetch-User": "?1",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             },
-            cache: "no-store",
         });
 
         if (!response.ok) {
@@ -159,7 +149,6 @@ export async function POST(request: Request) {
                 // Skip invalid JSON-LD
             }
         });
-        //console.log(productData);
 
         // 2. Extract from Open Graph meta tags
         if (!productData.name) {
@@ -286,6 +275,15 @@ export async function POST(request: Request) {
             } catch {
                 // If URL construction fails, keep the original
             }
+        }
+
+        if (!productData.brand) {
+            productData.brand =
+                $('meta[property="og:site_name"]').attr("content") ||
+                $('meta[property="site_name"]').attr("content") ||
+                $('meta[property="product:site_name"]').attr("content") ||
+                $('meta[name="site_name"]').attr("content") ||
+                null;
         }
 
         // Set default currency to USD if not found

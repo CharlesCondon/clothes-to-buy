@@ -5,14 +5,34 @@ import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import FilterSortBar from "@/components/FilterBar";
 import AddProductModal from "@/components/AddProductForm";
-import { CategoryFilter, SortOption } from "@/lib/types";
+import { CategoryFilter, Product, SortOption } from "@/lib/types";
+import EditProductModal from "@/components/EditProductForm";
+import { convertToUSD } from "@/lib/currencyUtils";
 
 export default function HomePage() {
-    const { products, loading, deleteProduct, addProduct, user } =
-        useProducts();
+    const {
+        products,
+        loading,
+        deleteProduct,
+        addProduct,
+        updateProduct,
+        user,
+    } = useProducts();
     const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
     const [sortOption, setSortOption] = useState<SortOption>("newest");
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+    const handleEdit = (product: Product) => {
+        setEditingProduct(product);
+        setIsEditModalOpen(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setEditingProduct(null);
+    };
 
     // Filter and sort products
     const filteredAndSortedProducts = useMemo(() => {
@@ -22,6 +42,12 @@ export default function HomePage() {
         if (categoryFilter !== "all") {
             filtered = filtered.filter((p) => p.category === categoryFilter);
         }
+
+        // Helper function to get effective price (sale price takes precedence)
+        const getEffectivePriceInUSD = (product: Product): number => {
+            const effectivePrice = product.salePrice ?? product.price ?? 0;
+            return convertToUSD(effectivePrice, product.currency);
+        };
 
         // Apply sorting
         switch (sortOption) {
@@ -50,10 +76,16 @@ export default function HomePage() {
                 );
                 break;
             case "price-low":
-                filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+                filtered.sort(
+                    (a, b) =>
+                        getEffectivePriceInUSD(a) - getEffectivePriceInUSD(b)
+                );
                 break;
             case "price-high":
-                filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+                filtered.sort(
+                    (a, b) =>
+                        getEffectivePriceInUSD(b) - getEffectivePriceInUSD(a)
+                );
                 break;
         }
 
@@ -104,7 +136,7 @@ export default function HomePage() {
             {/* Add Product Button */}
             <div className="mb-6">
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setIsAddModalOpen(true)}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-colors shadow-sm cursor-pointer"
                 >
                     <svg
@@ -149,7 +181,7 @@ export default function HomePage() {
                         Start adding products to build your collection
                     </p>
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => setIsAddModalOpen(true)}
                         className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-colors cursor-pointer"
                     >
                         <svg
@@ -201,6 +233,7 @@ export default function HomePage() {
                                     key={product.id}
                                     product={product}
                                     onDelete={deleteProduct}
+                                    onEdit={handleEdit}
                                 />
                             ))}
                         </div>
@@ -210,9 +243,17 @@ export default function HomePage() {
 
             {/* Add Product Modal */}
             <AddProductModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
                 onAdd={addProduct}
+            />
+
+            {/* Edit Product Modal */}
+            <EditProductModal
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                onUpdate={updateProduct}
+                product={editingProduct}
             />
         </div>
     );
