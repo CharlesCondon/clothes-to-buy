@@ -46,6 +46,7 @@ export async function POST(request: Request) {
             name: string | null;
             brand: string | null;
             price: number | null;
+            salePrice: number | null;
             currency: string | null;
             image_url: string | null;
             category: string | null;
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
             name: null,
             brand: null,
             price: null,
+            salePrice: null,
             currency: null,
             image_url: null,
             category: null,
@@ -73,24 +75,67 @@ export async function POST(request: Request) {
                         if (!productData.name && item.name) {
                             productData.name = item.name;
                         }
+
                         if (!productData.brand && item.brand) {
                             productData.brand =
                                 typeof item.brand === "string"
                                     ? item.brand
                                     : item.brand.name;
                         }
+
                         if (!productData.price && item.offers) {
                             const offers = Array.isArray(item.offers)
                                 ? item.offers[0]
                                 : item.offers;
+
                             if (offers.price) {
                                 productData.price = parseFloat(offers.price);
                             }
+
                             if (offers.priceCurrency) {
                                 productData.currency = offers.priceCurrency;
                             }
-                            //console.log(item.offers);
+
+                            if (offers.priceSpecification) {
+                                const specs = Array.isArray(
+                                    offers.priceSpecification
+                                )
+                                    ? offers.priceSpecification
+                                    : [offers.priceSpecification];
+
+                                // extract valid numeric prices
+                                const specPrices = specs
+                                    .map((s: { price: string }) =>
+                                        parseFloat(s.price)
+                                    )
+                                    .filter((p: number) => !isNaN(p));
+
+                                if (specPrices.length > 0) {
+                                    const highest = Math.max(...specPrices);
+                                    const lowest = Math.min(...specPrices);
+
+                                    // Highest price = original price
+                                    if (!productData.price) {
+                                        productData.price = highest;
+                                    }
+
+                                    // Lowest price = sale price (only if different)
+                                    if (lowest !== highest) {
+                                        productData.salePrice = lowest;
+                                    }
+
+                                    // Prefer priceCurrency inside priceSpecification if missing
+                                    if (!productData.currency) {
+                                        const c = specs.find(
+                                            (s: { priceCurrency: number }) =>
+                                                s.priceCurrency
+                                        )?.priceCurrency;
+                                        if (c) productData.currency = c;
+                                    }
+                                }
+                            }
                         }
+
                         if (!productData.image_url && item.image) {
                             const image = Array.isArray(item.image)
                                 ? item.image[0]
@@ -104,6 +149,7 @@ export async function POST(request: Request) {
                 // Skip invalid JSON-LD
             }
         });
+        console.log(productData);
 
         // 2. Extract from Open Graph meta tags
         if (!productData.name) {
@@ -132,7 +178,6 @@ export async function POST(request: Request) {
             if (priceContent) {
                 productData.price = parseFloat(priceContent);
             }
-            //console.log(priceContent);
 
             // Try to get currency from meta tags
             if (!productData.currency) {
@@ -166,7 +211,6 @@ export async function POST(request: Request) {
 
             for (const selector of priceSelectors) {
                 const priceText = $(selector).first().text();
-                //console.log(priceText);
                 const priceMatch = priceText.match(/[\d,]+\.?\d*/g);
                 if (priceMatch) {
                     const cleanPrice = priceMatch[0].replace(/,/g, "");

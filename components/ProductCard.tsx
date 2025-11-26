@@ -101,17 +101,28 @@ export default function ProductCard({ product, onDelete }: ProductCardProps) {
                 </div>
 
                 <div className="flex items-center justify-between mt-3">
-                    {product.price !== null ? (
-                        <span className="text-lg font-semibold text-slate-900">
-                            {getCurrencySymbol(product.currency)}
-                            {product.price.toFixed(2)}
-                        </span>
-                    ) : (
-                        <span className="text-sm text-slate-400">
-                            Price not available
-                        </span>
-                    )}
-
+                    <div className="flex gap-4">
+                        {product.price !== null ? (
+                            <span
+                                className={`text-lg font-semibold text-slate-900 ${
+                                    product.salePrice && "line-through"
+                                }`}
+                            >
+                                {getCurrencySymbol(product.currency)}
+                                {product.price.toFixed(2)}
+                            </span>
+                        ) : (
+                            <span className="text-sm text-slate-400">
+                                Price not available
+                            </span>
+                        )}
+                        {product.salePrice !== null && (
+                            <span className="text-lg font-semibold text-red-700">
+                                {getCurrencySymbol(product.currency)}
+                                {product.salePrice.toFixed(2)}
+                            </span>
+                        )}
+                    </div>
                     <a
                         href={product.url}
                         target="_blank"

@@ -29,6 +29,7 @@ export default function AddProductForm({
     const [name, setName] = useState("");
     const [brand, setBrand] = useState("");
     const [price, setPrice] = useState("");
+    const [salePrice, setSalePrice] = useState("");
     const [currency, setCurrency] = useState("USD");
     const [imageUrl, setImageUrl] = useState("");
     const [category, setCategory] = useState<string>("other");
@@ -60,6 +61,7 @@ export default function AddProductForm({
             setName(data.name || "");
             setBrand(data.brand || "");
             setPrice(data.price?.toString() || "");
+            setSalePrice(data.salePrice?.toString() || "");
             setCurrency(data.currency || "USD");
             setImageUrl(data.image_url || "");
             setCategory(data.category || "other");
@@ -85,6 +87,7 @@ export default function AddProductForm({
                 name: name || null,
                 brand: brand || null,
                 price: price ? parseFloat(price) : null,
+                salePrice: salePrice ? parseFloat(salePrice) : null,
                 currency: currency || "USD",
                 image_url: imageUrl || null,
                 category: category || null,
@@ -95,6 +98,7 @@ export default function AddProductForm({
             setName("");
             setBrand("");
             setPrice("");
+            setSalePrice("");
             setCurrency("USD");
             setImageUrl("");
             setCategory("other");
@@ -114,6 +118,7 @@ export default function AddProductForm({
         setName("");
         setBrand("");
         setPrice("");
+        setSalePrice("");
         setCurrency("USD");
         setImageUrl("");
         setCategory("other");
@@ -128,7 +133,7 @@ export default function AddProductForm({
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity"
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity cursor-pointer"
                 onClick={handleClose}
             />
 
@@ -185,7 +190,7 @@ export default function AddProductForm({
                                         type="button"
                                         onClick={handleScrape}
                                         disabled={scraping || !url.trim()}
-                                        className="px-6 py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-nowrap"
+                                        className="px-6 py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-nowrap cursor-pointer"
                                     >
                                         {scraping ? (
                                             <span className="flex items-center gap-2">
@@ -275,7 +280,7 @@ export default function AddProductForm({
                                             htmlFor="price"
                                             className="block text-sm font-medium text-slate-700 mb-1.5"
                                         >
-                                            Price
+                                            Original Price
                                         </label>
                                         <div className="flex gap-2">
                                             <select
@@ -317,37 +322,54 @@ export default function AddProductForm({
                                             />
                                         </div>
                                     </div>
-
-                                    {/* Category */}
                                     <div>
                                         <label
-                                            htmlFor="category"
+                                            htmlFor="price"
                                             className="block text-sm font-medium text-slate-700 mb-1.5"
                                         >
-                                            Category
+                                            Sale Price
                                         </label>
-                                        <select
-                                            id="category"
-                                            value={category}
+
+                                        <input
+                                            id="salePrice"
+                                            type="number"
+                                            step="0.01"
+                                            value={salePrice}
                                             onChange={(e) =>
-                                                setCategory(e.target.value)
+                                                setSalePrice(e.target.value)
                                             }
-                                            className="w-full px-4 py-[12.5px] leading-[normal] rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 cursor-pointer"
-                                        >
-                                            <option value="shirts">
-                                                Shirts
-                                            </option>
-                                            <option value="pants">Pants</option>
-                                            <option value="shoes">Shoes</option>
-                                            <option value="outerwear">
-                                                Outerwear
-                                            </option>
-                                            <option value="accessories">
-                                                Accessories
-                                            </option>
-                                            <option value="other">Other</option>
-                                        </select>
+                                            placeholder="0.00"
+                                            className="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
+                                        />
                                     </div>
+                                </div>
+                                {/* Category */}
+                                <div>
+                                    <label
+                                        htmlFor="category"
+                                        className="block text-sm font-medium text-slate-700 mb-1.5"
+                                    >
+                                        Category
+                                    </label>
+                                    <select
+                                        id="category"
+                                        value={category}
+                                        onChange={(e) =>
+                                            setCategory(e.target.value)
+                                        }
+                                        className="w-full px-4 py-[12.5px] leading-[normal] rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800 cursor-pointer"
+                                    >
+                                        <option value="shirts">Shirts</option>
+                                        <option value="pants">Pants</option>
+                                        <option value="shoes">Shoes</option>
+                                        <option value="outerwear">
+                                            Outerwear
+                                        </option>
+                                        <option value="accessories">
+                                            Accessories
+                                        </option>
+                                        <option value="other">Other</option>
+                                    </select>
                                 </div>
 
                                 {/* Image URL */}
@@ -397,14 +419,14 @@ export default function AddProductForm({
                                 <button
                                     type="button"
                                     onClick={handleClose}
-                                    className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium"
+                                    className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading || !url.trim()}
-                                    className="flex-1 px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                    className="flex-1 px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium cursor-pointer"
                                 >
                                     {loading ? "Adding..." : "Add Product"}
                                 </button>
